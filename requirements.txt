@@ -1,0 +1,20 @@
+# Development
+flake8
+python-dotenv
+pyyaml
+
+# Logging
+python-json-logger
+
+# Web Framework
+streamlit
+
+# Utilities
+python-dateutil
+pytz
+numpy
+pandas
+requests
+
+# Vis
+matplotlib
