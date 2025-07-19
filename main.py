@@ -10,8 +10,20 @@ import urllib.parse
 
 def load_countries():
     """国名データを読み込む"""
-    with open('data/countries.json', 'r', encoding='utf-8') as f:
-        return json.load(f)
+    # スクリプトファイルのディレクトリを基準とした絶対パス
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    countries_path = os.path.join(script_dir, 'countries.json')
+    
+    try:
+        with open(countries_path, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    except FileNotFoundError:
+        st.error(f"countries.jsonファイルが見つかりません: {countries_path}")
+        st.info("dataフォルダとcountries.jsonファイルが存在することを確認してください。")
+        return []
+    except json.JSONDecodeError:
+        st.error("countries.jsonファイルの形式が正しくありません。")
+        return []
 
 
 def get_random_options(countries, correct_answer, num_options=4):
