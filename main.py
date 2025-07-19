@@ -6,7 +6,13 @@ import os
 import uuid
 from pathlib import Path
 import urllib.parse
+import base64
+import urllib.parse
 
+
+def get_base64_image(image_path):
+    with open(image_path, "rb") as img_file:
+        return base64.b64encode(img_file.read()).decode()
 
 def load_countries():
     """国名データを読み込む"""
@@ -249,7 +255,7 @@ def show_game():
         st.write('')
         st.write('')
 
-        if st.button("🏠 ホームに戻る", use_container_width=True):
+        if st.button("ホームにもどる", use_container_width=True):
             st.session_state.game_state = 'menu'
             st.rerun()
 
@@ -306,14 +312,14 @@ def show_results():
             st.metric("最速回答時間", f"{fastest_time:.1f}秒")
 
     # 評価メッセージ
-    if accuracy >= 90:
-        st.success("🏆 素晴らしい！国旗博士ですね！")
+    if accuracy >= 98:
+        st.success("🏆 素晴らしい！あなたは国旗博士です！")
     elif accuracy >= 70:
-        st.info("👍 良い成績です！")
+        st.info("👍 良い成績です！あなたは国旗上級者です！")
     elif accuracy >= 50:
-        st.warning("📖 もう少し頑張りましょう！")
+        st.warning("📖 もう少し頑張りましょう！あなたは国旗中級者です！")
     else:
-        st.error("📚 国旗の勉強をもっとしてみましょう！")
+        st.error("📚 国旗の勉強をもっとしてみましょう！あなたは国旗ビギナーです！")
 
     # 詳細結果
     with st.expander("詳細結果を見る", expanded=False):
@@ -332,32 +338,61 @@ def show_results():
     )
 
     # ホームに戻る
-    if st.button("ホームに戻る", use_container_width=True):
+    if st.button("ホームにもどる", use_container_width=True):
         st.session_state.game_state = 'menu'
         st.rerun()
 
 
 def create_sns_share_section(accuracy, correct_answers, total_questions, minutes, seconds):
     """Creates an automatic SNS share section for results."""
-    import urllib.parse
 
-    st.subheader("📱 Share Results")
+
+    # OGP meta tags
+    st.markdown("""
+   <meta property="og:title" content="🏳国旗クイズ🏳 - 国旗クイズ" />
+   <meta property="og:description" content="世界の国旗を当てるクイズゲーム！あなたの国旗知識をテストしよう！" />
+   <meta property="og:url" content="https://flags-ddeberias.streamlit.app" />
+   <meta property="og:type" content="website" />
+   <meta property="og:image" content="https://flags-ddeberias.streamlit.app/app/static/flag_quiz_ogp.png" />
+   <meta property="og:image:width" content="1200" />
+   <meta property="og:image:height" content="630" />
+   <meta property="og:site_name" content="国旗クイズ" />
+   <meta name="twitter:card" content="summary_large_image" />
+   <meta name="twitter:title" content="🏳国旗クイズ🏳 - Flag Quiz Results" />
+   <meta name="twitter:description" content="世界の国旗を当てるクイズゲーム！あなたの国旗知識をテストしよう！" />
+   <meta name="twitter:image" content="https://flags-ddeberias.streamlit.app/app/static/flag_quiz_ogp.png" />
+   """, unsafe_allow_html=True)
+
+    st.markdown("結果をシェアする")
+
+    # 評価メッセージ
+    if accuracy >= 98:
+        rank="国旗博士"
+    elif accuracy >= 70:
+        rank="国旗上級者"
+    elif accuracy >= 50:
+        rank="国旗中級者"
+    else:
+        rank="国旗ビギナー"
 
     # Share text creation
-    share_text = f"""🏴‍☠️ Flag Quiz Results 🏴‍☠️
-Accuracy: {accuracy:.1f}%
-Correct Answers: {correct_answers}/{total_questions}
-Total Time Taken: {minutes} minutes {seconds} seconds"""
+    share_text = f"""🏳　国旗クイズ　🏳️
+私は{rank}になりました！
+
+正答率: {accuracy:.1f}%
+正答数: {correct_answers}/{total_questions}
+タイム: {minutes} 分 {seconds} 秒
+"""
 
     page_url = "https://flags-ddeberias.streamlit.app"
-    page_title = "Flag Quiz Results"
+    page_title = "🏳国旗クイズ🏳"
 
     # URL encode the text for proper sharing
     encoded_text = urllib.parse.quote(share_text)
     encoded_url = urllib.parse.quote(page_url)
 
     # Twitter share link
-    twitter_url = f"https://twitter.com/intent/tweet?text={encoded_text}&url={encoded_url}"
+    x_url = f"https://twitter.com/intent/tweet?text={encoded_text}&url={encoded_url}"
 
     # Line share link - corrected format
     line_message = f"{share_text}\n{page_url}"
@@ -365,8 +400,36 @@ Total Time Taken: {minutes} minutes {seconds} seconds"""
     line_url = f"https://line.me/R/msg/text/?{line_encoded}"
 
     # Display share buttons
-    st.markdown(f'<a href="{twitter_url}" rel="nofollow noopener" target="_blank">🐦 Tweet</a>', unsafe_allow_html=True)
-    st.markdown(f'<a href="{line_url}" rel="nofollow noopener" target="_blank">💬 Line</a>', unsafe_allow_html=True)
-    
+    line_img = get_base64_image("img/LINE_Brand_icon.png")
+    x_img = get_base64_image("img/x-app-icon.webp")
+
+    st.markdown(
+        f'<div>'
+        f'<a href="{line_url}" rel="nofollow noopener" target="_blank" style="margin-right:20px;">'
+        f'<img src="data:image/png;base64,{line_img}" width="30" alt="Line Logo" style="vertical-align:middle;">'
+        f'</a>'
+        f'<a href="{x_url}" rel="nofollow noopener" target="_blank">'
+        f'<img src="data:image/webp;base64,{x_img}" width="30" alt="X Logo" style="vertical-align:middle;">'
+        f'</a>'
+        f'</div>',
+        unsafe_allow_html=True
+    )
+
+    # URL with copy button
+    col1, col2 = st.columns([4, 1])
+    with col1:
+        st.text_input("URL:", value=page_url, key="share_url", disabled=True)
+    with col2:
+        st.markdown("<br>", unsafe_allow_html=True)  # Add spacing to align with text input
+        if st.button("📋 Copy", key="copy_url"):
+            # JavaScript to copy to clipboard
+            st.markdown(f"""
+           <script>
+           navigator.clipboard.writeText('{page_url}').then(function() {{
+               console.log('URL copied to clipboard');
+           }});
+           </script>
+           """, unsafe_allow_html=True)
+
 if __name__ == "__main__":
     main()
