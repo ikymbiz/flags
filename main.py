@@ -253,23 +253,6 @@ def show_game():
             st.session_state.game_state = 'menu'
             st.rerun()
 
-# def show_sidebar():
-#     """サイドメニューを表示"""
-#     with st.sidebar:
-#
-#         # # ホームボタン
-#         # if st.button("🏠 ホームに戻る", use_container_width=True):
-#         #     st.session_state.game_state = 'menu'
-#         #     st.rerun()
-#
-#         # 新しいゲームを開始
-#         st.markdown("### 📝 新しいゲームを開始")
-#
-#         col1, col2 = st.columns(2)
-#         with col1:
-#             if st.button("10問", key="sidebar_10", use_container_width=True):
-#                 start_game(10)
-
 
 def move_to_next_question():
     """次の問題に移動"""
@@ -377,7 +360,12 @@ def create_sns_share_section(accuracy, correct_answers, total_questions, minutes
     else:
         share_text += "\n#国旗初心者 #国旗クイズ #がんばろう"
 
-    # CSS for social buttons
+    # Font Awesome CDN読み込み
+    st.markdown("""
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    """, unsafe_allow_html=True)
+
+    # CSS for social buttons with official icons
     st.markdown("""
     <style>
     .social-button {
@@ -387,46 +375,61 @@ def create_sns_share_section(accuracy, correct_answers, total_questions, minutes
         text-decoration: none;
         padding: 15px;
         border-radius: 10px;
-        transition: transform 0.2s;
+        transition: transform 0.2s, box-shadow 0.2s;
         color: white;
         font-weight: bold;
         font-size: 14px;
         width: 100%;
         text-align: center;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
 
     .social-button:hover {
         transform: scale(1.05);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        text-decoration: none;
+        color: white;
     }
 
     .line-button {
-        background-color: #06C755;
+        background: linear-gradient(135deg, #06C755 0%, #04B84F 100%);
     }
 
     .x-button {
-        background-color: #000000;
+        background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
     }
 
     .social-icon {
-        font-size: 24px;
-        margin-bottom: 5px;
+        font-size: 28px;
+        margin-bottom: 8px;
+    }
+
+    .social-text {
+        font-size: 16px;
+        font-weight: 600;
     }
     </style>
     """, unsafe_allow_html=True)
 
     # URLエンコード処理
-    encoded_text = urllib.parse.quote(share_text)
+    try:
+        encoded_text = urllib.parse.quote(share_text)
+    except Exception as e:
+        st.error("テキストのエンコードに失敗しました")
+        return
 
     # シェアボタン
-    col_line, col_x = st.columns(2)
+    col_line, col_x = st.columns(2, gap="medium")
 
     with col_line:
         line_url = f"https://social-plugins.line.me/lineit/share?text={encoded_text}"
         st.markdown(f'''
         <div style="text-align: center;">
-            <a href="{line_url}" target="_blank" class="social-button line-button">
-                <div class="social-icon">💬</div>
-                LINE
+            <a href="{line_url}" target="_blank" class="social-button line-button" aria-label="LINEでシェア">
+                <div class="social-icon">
+                    <i class="fab fa-line"></i>
+                </div>
+                <div class="social-text">LINE</div>
             </a>
         </div>
         ''', unsafe_allow_html=True)
@@ -435,9 +438,11 @@ def create_sns_share_section(accuracy, correct_answers, total_questions, minutes
         x_url = f"https://twitter.com/intent/tweet?text={encoded_text}"
         st.markdown(f'''
         <div style="text-align: center;">
-            <a href="{x_url}" target="_blank" class="social-button x-button">
-                <div class="social-icon">✖️</div>
-                X (Twitter)
+            <a href="{x_url}" target="_blank" class="social-button x-button" aria-label="Xでシェア">
+                <div class="social-icon">
+                    <i class="fab fa-x-twitter"></i>
+                </div>
+                <div class="social-text">X (Twitter)</div>
             </a>
         </div>
         ''', unsafe_allow_html=True)
